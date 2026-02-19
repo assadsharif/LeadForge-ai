@@ -1,0 +1,12 @@
+# Production overrides — apply with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+services:
+  backend:
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: WARNING
+    volumes: []
+
+  frontend:
+    environment:
+      NODE_ENV: production

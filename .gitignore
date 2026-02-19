@@ -1,0 +1,70 @@
+# Virtual environment
+.venv/
+venv/
+env/
+.claude
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*secret*
+*credentials*
+credentials.json
+*.crt
+*.cer
+id_rsa*
+*.ppk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# uv
+backend/uv.lock
+backend/.venv/
+
+# Alembic (never commit auto-generated migration unless reviewed)
+# Migrations in versions/ ARE committed intentionally
+
+# Docker
+.docker/
