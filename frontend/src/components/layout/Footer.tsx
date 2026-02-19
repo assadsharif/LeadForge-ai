@@ -7,7 +7,6 @@ const FOOTER_LINKS = {
 export function Footer() {
   return (
     <footer
-      role="contentinfo"
       className="border-t border-white/10 bg-black/40 px-6 py-16"
     >
       <div className="mx-auto max-w-7xl grid grid-cols-2 gap-12 md:grid-cols-4">

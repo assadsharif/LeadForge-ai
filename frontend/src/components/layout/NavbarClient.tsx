@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 interface NavbarClientProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function NavbarClient({ children }: NavbarClientProps) {
@@ -17,7 +18,6 @@ export function NavbarClient({ children }: NavbarClientProps) {
 
   return (
     <nav
-      role="navigation"
       aria-label="Main navigation"
       className={[
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
