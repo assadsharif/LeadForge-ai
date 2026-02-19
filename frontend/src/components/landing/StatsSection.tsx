@@ -11,8 +11,8 @@ export function StatsSection() {
         <dl className="grid grid-cols-1 gap-y-10 sm:grid-cols-3 sm:gap-x-8">
           {STATS.map(({ value, label }) => (
             <div key={label} className="text-center">
-              <dt className="text-4xl font-bold text-indigo-400">{value}</dt>
-              <dd className="mt-2 text-sm text-slate-400">{label}</dd>
+              <dt className="text-sm text-slate-400">{label}</dt>
+              <dd className="mt-4 text-4xl font-bold text-indigo-400">{value}</dd>
             </div>
           ))}
         </dl>
