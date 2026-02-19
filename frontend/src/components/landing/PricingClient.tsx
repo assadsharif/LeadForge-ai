@@ -67,7 +67,7 @@ export function PricingClient() {
   return (
     <>
       <div className="mt-8 flex justify-center">
-        <PricingToggle onChange={setCycle} />
+        <PricingToggle value={cycle} onChange={setCycle} />
       </div>
 
       <div className="mt-16 grid gap-8 sm:grid-cols-3">
@@ -86,7 +86,11 @@ export function PricingClient() {
             >
               <p className="text-lg font-semibold text-white">{tier.name}</p>
               <p className="mt-1 text-sm text-slate-400">{tier.description}</p>
-              <p className="mt-4 text-4xl font-bold text-white">
+              <p
+                className="mt-4 text-4xl font-bold text-white"
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 {displayPrice}
                 {displayPrice !== "Custom" && (
                   <span className="text-lg font-normal text-slate-400">

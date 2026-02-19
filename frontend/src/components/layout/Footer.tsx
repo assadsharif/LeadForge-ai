@@ -1,7 +1,19 @@
 const FOOTER_LINKS = {
-  Product: ["Features", "Pricing", "Changelog"],
-  Company: ["About", "Blog", "Careers"],
-  Legal: ["Privacy", "Terms", "Security"],
+  Product: [
+    { label: "Features", href: "/features" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Changelog", href: "/changelog" },
+  ],
+  Company: [
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "Careers", href: "/careers" },
+  ],
+  Legal: [
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Security", href: "/security" },
+  ],
 } as const;
 
 export function Footer() {
@@ -22,15 +34,15 @@ export function Footer() {
 
         {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
           <div key={heading}>
-            <p className="text-sm font-semibold text-white">{heading}</p>
+            <h3 className="text-sm font-semibold text-white">{heading}</h3>
             <ul className="mt-4 space-y-2">
               {links.map((link) => (
-                <li key={link}>
+                <li key={link.label}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
