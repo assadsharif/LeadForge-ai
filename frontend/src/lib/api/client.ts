@@ -15,6 +15,15 @@ export class ApiRequestError extends Error {
   }
 }
 
+async function throwApiError(res: Response): Promise<never> {
+  const err: ApiError = await res.json().catch(() => ({ detail: "Unknown error" }));
+  const detail =
+    typeof err.detail === "string"
+      ? err.detail
+      : err.detail.map((e) => e.msg).join(", ");
+  throw new ApiRequestError(res.status, detail);
+}
+
 export async function apiPost<TBody, TResponse>(
   path: string,
   body: TBody,
@@ -25,14 +34,23 @@ export async function apiPost<TBody, TResponse>(
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const err: ApiError = await res.json().catch(() => ({ detail: "Unknown error" }));
-    const detail =
-      typeof err.detail === "string"
-        ? err.detail
-        : err.detail.map((e) => e.msg).join(", ");
-    throw new ApiRequestError(res.status, detail);
-  }
+  if (!res.ok) await throwApiError(res);
+
+  return res.json() as Promise<TResponse>;
+}
+
+export async function apiGet<TResponse>(
+  path: string,
+  token: string,
+): Promise<TResponse> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) await throwApiError(res);
 
   return res.json() as Promise<TResponse>;
 }

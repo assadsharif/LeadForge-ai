@@ -10,22 +10,54 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+  default: ({
+    href,
+    children,
+    className,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
     <a href={href} className={className}>
       {children}
     </a>
   ),
 }));
 
+// Use vi.hoisted so the class and mock fn are available inside the vi.mock factory
+// (which vitest hoists to run before any module-scope code).
+const { mockApiGet, ApiRequestError } = vi.hoisted(() => {
+  class ApiRequestError extends Error {
+    constructor(
+      public readonly status: number,
+      message: string,
+    ) {
+      super(message);
+      this.name = "ApiRequestError";
+    }
+  }
+  return { mockApiGet: vi.fn(), ApiRequestError };
+});
+
+vi.mock("@/lib/api/client", () => ({
+  ApiRequestError,
+  apiGet: (...args: unknown[]) => mockApiGet(...args),
+}));
+
 describe("DashboardPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     localStorage.clear();
+    // Default: authenticated requests return an empty leads list
+    mockApiGet.mockResolvedValue([]);
   });
 
   afterEach(() => {
     localStorage.clear();
   });
+
+  // ── Existing tests ────────────────────────────────────────────────────
 
   it("redirects to /login when no token", async () => {
     render(<DashboardPage />);
@@ -38,7 +70,7 @@ describe("DashboardPage", () => {
     localStorage.setItem("access_token", "test-token");
     render(<DashboardPage />);
     expect(
-      await screen.findByRole("heading", { name: /^leads$/i })
+      await screen.findByRole("heading", { name: /^leads$/i }),
     ).toBeInTheDocument();
   });
 
@@ -58,5 +90,47 @@ describe("DashboardPage", () => {
     await userEvent.click(signOutBtn);
     expect(localStorage.getItem("access_token")).toBeNull();
     expect(mockPush).toHaveBeenCalledWith("/login");
+  });
+
+  // ── New tests ─────────────────────────────────────────────────────────
+
+  it("shows loading state while fetching leads", async () => {
+    localStorage.setItem("access_token", "test-token");
+    mockApiGet.mockReturnValue(new Promise(() => {})); // never resolves
+    render(<DashboardPage />);
+    expect(await screen.findByText("Loading\u2026")).toBeInTheDocument();
+  });
+
+  it("renders leads returned by the API", async () => {
+    localStorage.setItem("access_token", "test-token");
+    mockApiGet.mockResolvedValue([
+      {
+        id: "abc123",
+        name: "Ada Lovelace",
+        email: "ada@example.com",
+        created_at: "2024-01-01T00:00:00Z",
+      },
+    ]);
+    render(<DashboardPage />);
+    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    expect(screen.getByText("ada@example.com")).toBeInTheDocument();
+  });
+
+  it("shows error banner when API returns non-401 error", async () => {
+    localStorage.setItem("access_token", "test-token");
+    mockApiGet.mockRejectedValue(new ApiRequestError(500, "Internal server error"));
+    render(<DashboardPage />);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Internal server error");
+  });
+
+  it("clears token and redirects to /login on 401 from API", async () => {
+    localStorage.setItem("access_token", "test-token");
+    mockApiGet.mockRejectedValue(new ApiRequestError(401, "Unauthorized"));
+    render(<DashboardPage />);
+    await waitFor(() => {
+      expect(localStorage.getItem("access_token")).toBeNull();
+      expect(mockPush).toHaveBeenCalledWith("/login");
+    });
   });
 });
