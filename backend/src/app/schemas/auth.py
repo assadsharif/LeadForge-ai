@@ -37,3 +37,19 @@ class RegisterResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_not_empty(cls, v: str) -> str:
+        if not v:
+            raise ValueError("Password must not be empty")
+        return v
+
+
+# Login returns the same token + user shape as register
+LoginResponse = RegisterResponse
