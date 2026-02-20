@@ -1,6 +1,8 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
-from jose import jwt
+from fastapi import Header, HTTPException, status
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
@@ -29,3 +31,30 @@ def create_access_token(
     )
     to_encode["exp"] = expire
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)  # type: ignore[no-any-return]
+
+
+def _credentials_exception() -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+def decode_access_token(token: str) -> uuid.UUID:
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        sub: str | None = payload.get("sub")
+        if sub is None:
+            raise _credentials_exception()
+        return uuid.UUID(sub)
+    except (JWTError, ValueError):
+        raise _credentials_exception()
+
+
+async def get_current_user(
+    authorization: str | None = Header(default=None),
+) -> uuid.UUID:
+    if authorization is None or not authorization.startswith("Bearer "):
+        raise _credentials_exception()
+    return decode_access_token(authorization[7:])
