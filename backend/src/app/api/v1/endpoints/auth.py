@@ -16,7 +16,7 @@ router = APIRouter()
 )
 async def register(
     body: RegisterRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ) -> RegisterResponse:
     existing = await get_user_by_email(db, body.email)
     if existing is not None:
