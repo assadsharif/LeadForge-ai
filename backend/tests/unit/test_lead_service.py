@@ -45,7 +45,8 @@ async def test_list_leads_empty() -> None:
         "app.services.lead_service.get_leads_by_user_id",
         new_callable=AsyncMock,
         return_value=[],
-    ):
+    ) as mock_repo:
         result = await list_leads(mock_db, user_id)
 
+    mock_repo.assert_called_once_with(mock_db, user_id)
     assert result == []
