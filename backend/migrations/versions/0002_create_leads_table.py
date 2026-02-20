@@ -22,7 +22,7 @@ def upgrade() -> None:
         sa.Column(
             "user_id",
             UUID(as_uuid=True),
-            sa.ForeignKey("users.id"),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("email", sa.String(255), nullable=False, unique=True),
