@@ -49,7 +49,7 @@ def decode_access_token(token: str) -> uuid.UUID:
             raise _credentials_exception()
         return uuid.UUID(sub)
     except (JWTError, ValueError):
-        raise _credentials_exception()
+        raise _credentials_exception() from None
 
 
 async def get_current_user(
