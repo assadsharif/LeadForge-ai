@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { registerSchema, type RegisterFormData } from "@/lib/schemas/auth";
+import { loginSchema, type LoginFormData } from "@/lib/schemas/auth";
 import { apiPost, ApiRequestError } from "@/lib/api/client";
 
-interface RegisterResponse {
+interface LoginResponse {
   access_token: string;
   token_type: string;
   user: { id: string; email: string; full_name: string; created_at: string };
@@ -21,7 +21,7 @@ const errorClass = "mt-1 text-sm text-red-400";
 
 const labelClass = "mb-1 block text-sm font-medium text-slate-300";
 
-export function RegisterForm() {
+export function LoginForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -29,18 +29,17 @@ export function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
   });
 
-  async function onSubmit(data: RegisterFormData) {
+  async function onSubmit(data: LoginFormData) {
     setServerError(null);
     try {
       const res = await apiPost<
-        { full_name: string; email: string; password: string },
-        RegisterResponse
-      >("/api/v1/auth/register", {
-        full_name: data.fullName,
+        { email: string; password: string },
+        LoginResponse
+      >("/api/v1/auth/login", {
         email: data.email,
         password: data.password,
       });
@@ -65,30 +64,6 @@ export function RegisterForm() {
           {serverError}
         </div>
       )}
-
-      <div>
-        <label htmlFor="fullName" className={labelClass}>
-          Full name
-        </label>
-        <input
-          id="fullName"
-          type="text"
-          autoComplete="name"
-          placeholder="Ada Lovelace"
-          aria-invalid={!!errors.fullName}
-          aria-describedby="fullName-error"
-          className={inputClass}
-          {...register("fullName")}
-        />
-        <p
-          id="fullName-error"
-          className={errorClass}
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {errors.fullName?.message ?? ""}
-        </p>
-      </div>
 
       <div>
         <label htmlFor="email" className={labelClass}>
@@ -121,8 +96,8 @@ export function RegisterForm() {
         <input
           id="password"
           type="password"
-          autoComplete="new-password"
-          placeholder="Min. 8 characters"
+          autoComplete="current-password"
+          placeholder="Your password"
           aria-invalid={!!errors.password}
           aria-describedby="password-error"
           className={inputClass}
@@ -138,37 +113,13 @@ export function RegisterForm() {
         </p>
       </div>
 
-      <div>
-        <label htmlFor="confirmPassword" className={labelClass}>
-          Confirm password
-        </label>
-        <input
-          id="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Repeat your password"
-          aria-invalid={!!errors.confirmPassword}
-          aria-describedby="confirmPassword-error"
-          className={inputClass}
-          {...register("confirmPassword")}
-        />
-        <p
-          id="confirmPassword-error"
-          className={errorClass}
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {errors.confirmPassword?.message ?? ""}
-        </p>
-      </div>
-
       <button
         type="submit"
         disabled={isSubmitting}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-        Create account
+        Sign in
       </button>
     </form>
   );
