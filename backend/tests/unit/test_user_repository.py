@@ -8,7 +8,9 @@ from app.repositories.user_repository import create_user, get_user_by_email
 async def test_get_user_by_email_found() -> None:
     mock_session = AsyncMock()
     mock_result = MagicMock()
-    expected_user = User(id=uuid.uuid4(), email="ada@example.com", full_name="Ada", hashed_password="x")
+    expected_user = User(
+        id=uuid.uuid4(), email="ada@example.com", full_name="Ada", hashed_password="x"
+    )
     mock_result.scalar_one_or_none.return_value = expected_user
     mock_session.execute.return_value = mock_result
 
