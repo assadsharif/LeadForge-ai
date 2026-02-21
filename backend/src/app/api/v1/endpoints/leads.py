@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.schemas.lead import LeadCreate, LeadRead
-from app.services.lead_service import create_lead, list_leads
+from app.schemas.lead import EnrichResponse, LeadCreate, LeadRead
+from app.services.lead_service import create_lead, enrich_lead, get_lead, list_leads
 
 router = APIRouter()
 
@@ -26,3 +26,21 @@ async def create_lead_endpoint(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ) -> LeadRead:
     return await create_lead(db, user_id, body)
+
+
+@router.get("/{lead_id}", response_model=LeadRead, status_code=200)
+async def get_lead_endpoint(
+    lead_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user),  # noqa: B008
+    db: AsyncSession = Depends(get_db),  # noqa: B008
+) -> LeadRead:
+    return await get_lead(db, user_id, lead_id)
+
+
+@router.post("/{lead_id}/enrich", response_model=EnrichResponse, status_code=200)
+async def enrich_lead_endpoint(
+    lead_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user),  # noqa: B008
+    db: AsyncSession = Depends(get_db),  # noqa: B008
+) -> EnrichResponse:
+    return await enrich_lead(db, user_id, lead_id)

@@ -143,7 +143,14 @@ export default function DashboardPage() {
               ) : (
                 leads.map((lead) => (
                   <tr key={lead.id} className="border-t border-white/5">
-                    <td className="px-6 py-4 text-white">{lead.name}</td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/leads/${lead.id}`}
+                        className="text-white hover:text-indigo-300 transition-colors"
+                      >
+                        {lead.name}
+                      </Link>
+                    </td>
                     <td className="px-6 py-4 text-slate-300">{lead.email}</td>
                     <td className="px-6 py-4 text-slate-400">
                       {new Date(lead.created_at).toLocaleDateString()}
