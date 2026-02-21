@@ -43,6 +43,7 @@ const { mockApiGet, ApiRequestError } = vi.hoisted(() => {
 vi.mock("@/lib/api/client", () => ({
   ApiRequestError,
   apiGet: (...args: unknown[]) => mockApiGet(...args),
+  apiPost: vi.fn(),
 }));
 
 describe("DashboardPage", () => {
@@ -132,5 +133,14 @@ describe("DashboardPage", () => {
       expect(localStorage.getItem("access_token")).toBeNull();
       expect(mockPush).toHaveBeenCalledWith("/login");
     });
+  });
+
+  it("opens Add lead modal when Add lead button is clicked", async () => {
+    localStorage.setItem("access_token", "test-token");
+    mockApiGet.mockResolvedValue([]);
+    render(<DashboardPage />);
+    const addBtn = await screen.findByRole("button", { name: /add lead/i });
+    await userEvent.click(addBtn);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });

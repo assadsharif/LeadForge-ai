@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ApiRequestError, apiGet } from "@/lib/api/client";
+import { AddLeadModal } from "./AddLeadModal";
 
 type Lead = {
   id: string;
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("access_token")) {
@@ -81,7 +83,16 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <h1 className="text-2xl font-bold text-white">Leads</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">Leads</h1>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+          >
+            Add lead
+          </button>
+        </div>
 
         {error !== null && (
           <div
@@ -144,6 +155,17 @@ export default function DashboardPage() {
           </table>
         </div>
       </main>
+
+      {isModalOpen && (
+        <AddLeadModal
+          token={localStorage.getItem("access_token") ?? ""}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            void fetchLeads();
+          }}
+        />
+      )}
     </div>
   );
 }

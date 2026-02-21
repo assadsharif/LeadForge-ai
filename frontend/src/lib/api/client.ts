@@ -27,10 +27,13 @@ async function throwApiError(res: Response): Promise<never> {
 export async function apiPost<TBody, TResponse>(
   path: string,
   body: TBody,
+  token?: string,
 ): Promise<TResponse> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
 
