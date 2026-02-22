@@ -15,23 +15,32 @@ _SYSTEM_PROMPT = (
     "Return ONLY the JSON object, no markdown fences or extra text."
 )
 
-_FALLBACK = {
+_FALLBACK: dict[str, str] = {
     "summary": "Unable to generate summary at this time.",
     "outreach_email": "Unable to generate outreach email at this time.",
 }
 
+_client: anthropic.AsyncAnthropic | None = None
 
-async def enrich_lead(name: str, email: str) -> dict:
+
+def _get_client() -> anthropic.AsyncAnthropic:
+    global _client
+    if _client is None:
+        _client = anthropic.AsyncAnthropic(api_key=settings.AI_API_KEY)
+    return _client
+
+
+async def enrich_lead(name: str, email: str) -> dict[str, str]:
     """Call Claude API to generate a lead summary and personalized outreach email."""
     if not settings.AI_API_KEY:
         logger.warning("AI_API_KEY not configured; returning fallback response")
         return _FALLBACK
 
-    client = anthropic.Anthropic(api_key=settings.AI_API_KEY)
+    client = _get_client()
     user_message = f"Lead name: {name}\nLead email: {email}"
 
     try:
-        message = client.messages.create(
+        message = await client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=1024,
             system=_SYSTEM_PROMPT,
@@ -40,7 +49,7 @@ async def enrich_lead(name: str, email: str) -> dict:
         )
         raw = message.content[0].text
         return json.loads(raw)
-    except (anthropic.APIError, anthropic.APITimeoutError) as exc:
+    except anthropic.APIError as exc:
         logger.error("AI API error during lead enrichment: %s", exc)
         return _FALLBACK
     except (json.JSONDecodeError, IndexError, KeyError) as exc:
