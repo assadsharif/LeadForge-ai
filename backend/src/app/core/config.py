@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     AI_API_KEY: str = ""
     AI_API_TIMEOUT: int = 30
+    ACCESS_TOKEN_EXPIRE_DAYS: int = 7
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
 

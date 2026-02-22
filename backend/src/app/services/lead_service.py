@@ -39,7 +39,7 @@ async def enrich_lead(db: AsyncSession, user_id: uuid.UUID, lead_id: uuid.UUID) 
 async def create_lead(
     db: AsyncSession, user_id: uuid.UUID, data: LeadCreate
 ) -> LeadRead:
-    existing = await get_lead_by_email(db, data.email)
+    existing = await get_lead_by_email(db, data.email, user_id)
     if existing is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

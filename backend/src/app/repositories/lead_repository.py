@@ -26,8 +26,12 @@ async def get_lead_by_id(
     return result.scalar_one_or_none()
 
 
-async def get_lead_by_email(session: AsyncSession, email: str) -> Lead | None:
-    result = await session.execute(select(Lead).where(Lead.email == email))
+async def get_lead_by_email(
+    session: AsyncSession, email: str, user_id: uuid.UUID
+) -> Lead | None:
+    result = await session.execute(
+        select(Lead).where(Lead.email == email, Lead.user_id == user_id)
+    )
     return result.scalar_one_or_none()
 
 

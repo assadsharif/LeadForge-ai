@@ -73,7 +73,7 @@ async def test_create_lead_success() -> None:
     ):
         result = await create_lead(mock_db, user_id, data)
 
-    mock_get.assert_called_once_with(mock_db, "ada@example.com")
+    mock_get.assert_called_once_with(mock_db, "ada@example.com", user_id)
     mock_create.assert_called_once_with(
         mock_db, user_id=user_id, email="ada@example.com", name="Ada Lovelace"
     )

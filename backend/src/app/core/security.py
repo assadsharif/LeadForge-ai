@@ -9,7 +9,6 @@ from app.core.config import settings
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ACCESS_TOKEN_EXPIRE_DAYS = 7
 ALGORITHM = "HS256"
 
 
@@ -27,7 +26,7 @@ def create_access_token(
 ) -> str:
     to_encode = data.copy()
     expire = datetime.now(UTC) + (
-        expires_delta or timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+        expires_delta or timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
     )
     to_encode["exp"] = expire
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)  # type: ignore[no-any-return]

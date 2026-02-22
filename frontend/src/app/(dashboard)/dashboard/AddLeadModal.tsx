@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { ApiRequestError, apiPost } from "@/lib/api/client";
 
@@ -14,6 +15,7 @@ const inputClass =
   "w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 export function AddLeadModal({ token, onClose, onSuccess }: Props) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,9 +33,14 @@ export function AddLeadModal({ token, onClose, onSuccess }: Props) {
       );
       onSuccess();
     } catch (err) {
-      setError(
-        err instanceof ApiRequestError ? err.detail : "Failed to add lead.",
-      );
+      if (err instanceof ApiRequestError && err.status === 401) {
+        localStorage.removeItem("access_token");
+        router.push("/login");
+      } else {
+        setError(
+          err instanceof ApiRequestError ? err.detail : "Failed to add lead.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
