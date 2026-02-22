@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 
 from app.models.lead import Lead
 from app.schemas.lead import LeadCreate, LeadRead
@@ -91,6 +92,29 @@ async def test_create_lead_duplicate_email_raises_409() -> None:
             "app.services.lead_service.get_lead_by_email",
             new_callable=AsyncMock,
             return_value=_mock_lead(user_id),
+        ),
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await create_lead(mock_db, user_id, data)
+
+    assert exc_info.value.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_create_lead_integrity_error_raises_409() -> None:
+    user_id = uuid.uuid4()
+    mock_db = AsyncMock()
+    data = LeadCreate(email="ada@example.com", name="Ada Lovelace")
+    with (
+        patch(
+            "app.services.lead_service.get_lead_by_email",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "app.services.lead_service.repo_create_lead",
+            new_callable=AsyncMock,
+            side_effect=IntegrityError(None, None, None),
         ),
         pytest.raises(HTTPException) as exc_info,
     ):

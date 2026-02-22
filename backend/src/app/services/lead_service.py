@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.lead_repository import (
@@ -45,5 +46,11 @@ async def create_lead(
             status_code=status.HTTP_409_CONFLICT,
             detail="A lead with this email already exists",
         )
-    lead = await repo_create_lead(db, user_id=user_id, email=data.email, name=data.name)
+    try:
+        lead = await repo_create_lead(db, user_id=user_id, email=data.email, name=data.name)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A lead with this email already exists",
+        ) from None
     return LeadRead.model_validate(lead)

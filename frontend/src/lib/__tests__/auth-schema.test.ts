@@ -70,11 +70,19 @@ describe("loginSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects short password", () => {
+  it("rejects empty password", () => {
+    const result = loginSchema.safeParse({
+      email: "ada@example.com",
+      password: "",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts short password (validation is backend responsibility at login)", () => {
     const result = loginSchema.safeParse({
       email: "ada@example.com",
       password: "short",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });

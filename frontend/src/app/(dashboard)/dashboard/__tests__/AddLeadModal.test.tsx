@@ -21,6 +21,10 @@ vi.mock("@/lib/api/client", () => ({
   apiPost: (...args: unknown[]) => mockApiPost(...args),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 describe("AddLeadModal", () => {
   const onClose = vi.fn();
   const onSuccess = vi.fn();
