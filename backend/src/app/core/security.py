@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from fastapi import Header, HTTPException, status
+from fastapi import Cookie, HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -52,8 +52,8 @@ def decode_access_token(token: str) -> uuid.UUID:
 
 
 async def get_current_user(
-    authorization: str | None = Header(default=None),
+    access_token: str | None = Cookie(default=None),
 ) -> uuid.UUID:
-    if authorization is None or not authorization.startswith("Bearer "):
+    if access_token is None:
         raise _credentials_exception()
-    return decode_access_token(authorization[7:])
+    return decode_access_token(access_token)

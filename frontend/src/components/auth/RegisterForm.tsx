@@ -36,7 +36,7 @@ export function RegisterForm() {
   async function onSubmit(data: RegisterFormData) {
     setServerError(null);
     try {
-      const res = await apiPost<
+      await apiPost<
         { full_name: string; email: string; password: string },
         RegisterResponse
       >("/api/v1/auth/register", {
@@ -44,7 +44,6 @@ export function RegisterForm() {
         email: data.email,
         password: data.password,
       });
-      localStorage.setItem("access_token", res.access_token);
       router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiRequestError) {

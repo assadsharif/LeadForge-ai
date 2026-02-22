@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.repositories.user_repository import create_user, get_user_by_email
@@ -22,6 +23,7 @@ router = APIRouter()
 )
 async def register(
     body: RegisterRequest,
+    response: Response,
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ) -> RegisterResponse:
     existing = await get_user_by_email(db, body.email)
@@ -40,6 +42,15 @@ async def register(
     )
 
     token = create_access_token({"sub": str(user.id)})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+    )
     return RegisterResponse(
         access_token=token,
         user=UserResponse.model_validate(user),
@@ -49,6 +60,7 @@ async def register(
 @router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
 async def login(
     body: LoginRequest,
+    response: Response,
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ) -> LoginResponse:
     user = await get_user_by_email(db, body.email)
@@ -58,7 +70,21 @@ async def login(
             detail="Invalid email or password",
         )
     token = create_access_token({"sub": str(user.id)})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+    )
     return LoginResponse(
         access_token=token,
         user=UserResponse.model_validate(user),
     )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response) -> None:
+    response.delete_cookie("access_token", path="/")

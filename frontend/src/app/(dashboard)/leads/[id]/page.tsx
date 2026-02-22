@@ -21,7 +21,6 @@ export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
 
-  const [isChecking, setIsChecking] = useState(true);
   const [lead, setLead] = useState<LeadRead | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,48 +38,31 @@ export default function LeadDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/login");
-    } else {
-      setIsChecking(false);
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (isChecking) return;
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-
     setIsLoading(true);
     setError(null);
-    apiGet<LeadRead>(`/api/v1/leads/${params.id}`, token)
+    apiGet<LeadRead>(`/api/v1/leads/${params.id}`)
       .then((data) => setLead(data))
       .catch((err) => {
         if (err instanceof ApiRequestError && err.status === 401) {
-          localStorage.removeItem("access_token");
           router.push("/login");
         } else {
           setError(err instanceof Error ? err.message : "Failed to load lead.");
         }
       })
       .finally(() => setIsLoading(false));
-  }, [isChecking, params.id, router]);
+  }, [params.id, router]);
 
   async function handleEnrich() {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
     setIsEnriching(true);
     setEnrichError(null);
     try {
       const data = await apiPost<Record<string, never>, EnrichResponse>(
         `/api/v1/leads/${params.id}/enrich`,
         {},
-        token,
       );
       setEnrichment(data);
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 401) {
-        localStorage.removeItem("access_token");
         router.push("/login");
       } else {
         setEnrichError(
@@ -99,8 +81,6 @@ export default function LeadDetailPage() {
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
   }
-
-  if (isChecking) return null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">

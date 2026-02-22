@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ApiRequestError, apiGet } from "@/lib/api/client";
+import { ApiRequestError, apiGet, apiPost } from "@/lib/api/client";
 import { AddLeadModal } from "./AddLeadModal";
 
 type Lead = {
@@ -15,31 +15,19 @@ type Lead = {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/login");
-    } else {
-      setIsChecking(false);
-    }
-  }, [router]);
-
   const fetchLeads = useCallback(async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiGet<Lead[]>("/api/v1/leads", token);
+      const data = await apiGet<Lead[]>("/api/v1/leads");
       setLeads(data);
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 401) {
-        localStorage.removeItem("access_token");
         router.push("/login");
       } else {
         setError(err instanceof Error ? err.message : "Failed to load leads.");
@@ -50,17 +38,13 @@ export default function DashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!isChecking) {
-      void fetchLeads();
-    }
-  }, [isChecking, fetchLeads]);
+    void fetchLeads();
+  }, [fetchLeads]);
 
-  function handleSignOut() {
-    localStorage.removeItem("access_token");
+  async function handleSignOut() {
+    await apiPost("/api/v1/auth/logout", {}).catch(() => null);
     router.push("/login");
   }
-
-  if (isChecking) return null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -73,7 +57,7 @@ export default function DashboardPage() {
           </Link>
           <button
             type="button"
-            onClick={handleSignOut}
+            onClick={() => void handleSignOut()}
             className="text-sm text-slate-400 transition-colors hover:text-white"
           >
             Sign out
@@ -165,7 +149,6 @@ export default function DashboardPage() {
 
       {isModalOpen && (
         <AddLeadModal
-          token={localStorage.getItem("access_token") ?? ""}
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
             setIsModalOpen(false);

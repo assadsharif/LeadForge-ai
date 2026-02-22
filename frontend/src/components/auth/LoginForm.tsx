@@ -36,14 +36,13 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormData) {
     setServerError(null);
     try {
-      const res = await apiPost<
+      await apiPost<
         { email: string; password: string },
         LoginResponse
       >("/api/v1/auth/login", {
         email: data.email,
         password: data.password,
       });
-      localStorage.setItem("access_token", res.access_token);
       router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiRequestError) {

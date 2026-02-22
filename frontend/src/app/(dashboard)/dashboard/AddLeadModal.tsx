@@ -6,7 +6,6 @@ import { Loader2 } from "lucide-react";
 import { ApiRequestError, apiPost } from "@/lib/api/client";
 
 type Props = {
-  token: string;
   onClose: () => void;
   onSuccess: () => void;
 };
@@ -14,7 +13,7 @@ type Props = {
 const inputClass =
   "w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-export function AddLeadModal({ token, onClose, onSuccess }: Props) {
+export function AddLeadModal({ onClose, onSuccess }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,12 +28,10 @@ export function AddLeadModal({ token, onClose, onSuccess }: Props) {
       await apiPost<{ name: string; email: string }, unknown>(
         "/api/v1/leads",
         { name, email },
-        token,
       );
       onSuccess();
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 401) {
-        localStorage.removeItem("access_token");
         router.push("/login");
       } else {
         setError(

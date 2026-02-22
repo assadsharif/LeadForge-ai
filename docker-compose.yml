@@ -22,7 +22,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/leadforge
-      SECRET_KEY: dev-secret-key-change-in-production
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
       ENVIRONMENT: development
       LOG_LEVEL: INFO
       CORS_ORIGINS: '["http://localhost:3000"]'
