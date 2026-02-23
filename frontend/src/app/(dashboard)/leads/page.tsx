@@ -33,7 +33,7 @@ export default function LeadsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiGet<Lead[]>("/api/v1/leads", token);
+      const data = await apiGet<Lead[]>("/api/v1/leads");
       setLeads(data);
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 401) {

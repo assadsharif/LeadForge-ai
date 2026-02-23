@@ -3,6 +3,10 @@
 venv/
 env/
 .claude
+.github
+.specify
+CLAUDE.md
+README.md
 
 # Python
 __pycache__/

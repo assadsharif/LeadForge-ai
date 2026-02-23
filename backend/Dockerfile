@@ -10,6 +10,7 @@ RUN uv pip install --system --no-cache-dir .
 # ---- Runtime stage ----
 FROM python:3.11-slim AS runner
 WORKDIR /app
+ENV PYTHONPATH=/app/src
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --gid 1001 appuser
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
